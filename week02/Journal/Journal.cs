@@ -1,16 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.Json;
 
 public class Journal
 {
     public List<Entry> _entries = new List<Entry>();
 
     // Add a new entry to the journal
-    public void AddEntry(string prompt, string response)
+    public void AddEntry(string prompt, string response, string tags)
     {
         string date = DateTime.Now.ToString("yyyy-MM-dd");
-        _entries.Add(new Entry(date, prompt, response));
+        _entries.Add(new Entry(date, prompt, response, tags));
     }
 
     // Display all journal entries
@@ -23,39 +24,50 @@ public class Journal
         }
     }
 
-    // Save journal entries to a file
+    // Save journal entries to a file (JSON format)
     public void SaveToFile(string filename)
     {
-        using (StreamWriter writer = new StreamWriter(filename))
-        {
-            foreach (Entry entry in _entries)
-            {
-                writer.WriteLine($"{entry._date}|{entry._prompt}|{entry._response}");
-            }
-        }
+        string json = JsonSerializer.Serialize(_entries, new JsonSerializerOptions { WriteIndented = true });
+        File.WriteAllText(filename, json);
         Console.WriteLine($"Journal saved to {filename}");
     }
 
-    // Load journal entries from a file
+    // Load journal entries from a file (JSON format)
     public void LoadFromFile(string filename)
     {
         if (File.Exists(filename))
         {
-            _entries.Clear();
-            string[] lines = File.ReadAllLines(filename);
-            foreach (string line in lines)
-            {
-                string[] parts = line.Split('|');
-                if (parts.Length == 3)
-                {
-                    _entries.Add(new Entry(parts[0], parts[1], parts[2]));
-                }
-            }
+            string json = File.ReadAllText(filename);
+            _entries = JsonSerializer.Deserialize<List<Entry>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
             Console.WriteLine($"Journal loaded from {filename}");
         }
         else
         {
             Console.WriteLine("File not found.");
+        }
+    }
+
+    // Search journal entries by keyword (in prompt, response, or tags)
+    public void SearchEntries(string keyword)
+    {
+        Console.WriteLine($"\nSearch Results for: {keyword}");
+        bool found = false;
+
+        foreach (Entry entry in _entries)
+        {
+            if (entry.Prompt.Contains(keyword, StringComparison.OrdinalIgnoreCase) ||
+                entry.Response.Contains(keyword, StringComparison.OrdinalIgnoreCase) ||
+                entry.Tags.Contains(keyword, StringComparison.OrdinalIgnoreCase))
+            {
+                entry.Display();
+                found = true;
+            }
+        }
+
+        if (!found)
+        {
+            Console.WriteLine("No matching entries found.");
         }
     }
 }

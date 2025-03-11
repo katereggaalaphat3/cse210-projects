@@ -3,7 +3,7 @@ using System;
 class Program
 {
     static void Main(string[] args)
-   {
+    {
         Journal myJournal = new Journal();
         PromptGenerator promptGenerator = new PromptGenerator();
 
@@ -14,7 +14,8 @@ class Program
             Console.WriteLine("2. Display journal");
             Console.WriteLine("3. Save journal to a file");
             Console.WriteLine("4. Load journal from a file");
-            Console.WriteLine("5. Exit");
+            Console.WriteLine("5. Search journal");
+            Console.WriteLine("6. Exit");
             Console.Write("Select an option: ");
 
             string choice = Console.ReadLine();
@@ -26,7 +27,9 @@ class Program
                     Console.WriteLine($"\nPrompt: {prompt}");
                     Console.Write("Your response: ");
                     string response = Console.ReadLine();
-                    myJournal.AddEntry(prompt, response);
+                    Console.Write("Enter tags (comma-separated, e.g., happy, work): ");
+                    string tags = Console.ReadLine(); // Fix for CS1503
+                    myJournal.AddEntry(prompt, response, tags);
                     break;
 
                 case "2":
@@ -46,6 +49,12 @@ class Program
                     break;
 
                 case "5":
+                    Console.Write("Enter keyword to search: ");
+                    string keyword = Console.ReadLine();
+                    myJournal.SearchEntries(keyword); // Fix for CS1061
+                    break;
+
+                case "6":
                     Console.WriteLine("Exiting Journal Program...");
                     return;
 
